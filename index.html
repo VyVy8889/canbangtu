@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cân bằng Điện dung Giàn tụ 6 Nhánh (Vế Trái / Vế Phải)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 mb-6 shadow-xl">
+            <h1 class="text-2xl font-bold text-cyan-400 mb-2">Cân bằng Điện dung Giàn tụ 6 Nhánh</h1>
+            <p class="text-slate-300 text-sm mb-4">
+                Tối ưu độc lập 3 nhánh Vế Trái (N<sub>L</sub>), 3 nhánh Vế Phải (N<sub>R</sub>) & đồng bộ cân bằng 3 Pha (A, B, C) cho giàn tụ bù trung/cao thế.
+            </p>
+            <div class="inline-flex items-center bg-cyan-950/60 border border-cyan-800/60 rounded-full px-3 py-1 text-xs text-cyan-300 font-medium">
+                ⚡ Sơ đồ 6 nhánh bất đối xứng 2 vế
+            </div>
+        </div>
+
+        <!-- Cấu hình số bình -->
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 mb-6 shadow-xl">
+            <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <span class="bg-cyan-500 text-slate-950 rounded-full w-6 h-6 inline-flex items-center justify-center text-xs font-bold">1</span>
+                Cấu hình số bình tụ
+            </h2>
+
+            <!-- Preset nhanh -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button onclick="setPreset(2, 3)" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-medium rounded-lg border border-slate-600 transition">
+                    2 Trái - 3 Phải (Tổng: 15 bình)
+                </button>
+                <button onclick="setPreset(4, 4)" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-medium rounded-lg border border-slate-600 transition">
+                    4 Trái - 4 Phải (Tổng: 24 bình)
+                </button>
+                <button onclick="setPreset(8, 8)" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-xs font-bold rounded-lg border border-cyan-500 transition text-white">
+                    8 Trái - 8 Phải (Tổng: 48 bình)
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Số bình mỗi nhánh Vế Trái (N<sub>L</sub>)</label>
+                    <input type="number" id="nl-input" value="8" min="1" max="50" oninput="updateRequirement()"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:outline-none focus:border-cyan-500">
+                    <span id="nl-total-desc" class="text-xs text-slate-400 mt-1 block">3 nhánh Trái = 24 bình</span>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Số bình mỗi nhánh Vế Phải (N<sub>R</sub>)</label>
+                    <input type="number" id="nr-input" value="8" min="1" max="50" oninput="updateRequirement()"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:outline-none focus:border-cyan-500">
+                    <span id="nr-total-desc" class="text-xs text-slate-400 mt-1 block">3 nhánh Phải = 24 bình</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 pt-2 border-t border-slate-700/60 text-sm">
+                <div>
+                    <span class="text-slate-400 block text-xs">Tổng số bình yêu cầu (3N<sub>L</sub> + 3N<sub>R</sub>):</span>
+                    <span id="required-count" class="text-lg font-bold text-white">48 bình</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-xs">Đã nhập hiện tại:</span>
+                    <span id="current-count" class="text-lg font-bold text-cyan-400">0 bình</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nhập liệu -->
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 mb-6 shadow-xl">
+            <h2 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <span class="bg-cyan-500 text-slate-950 rounded-full w-6 h-6 inline-flex items-center justify-center text-xs font-bold">2</span>
+                Nhập danh sách điện dung đo được (&mu;F)
+            </h2>
+            <p class="text-xs text-slate-400 mb-4">
+                Dán trực tiếp cột số từ Excel hoặc nhập từng dòng (hỗ trợ định dạng: <code class="bg-slate-900 px-1.5 py-0.5 rounded text-cyan-300">Tụ 01: 10.568</code> hoặc <code class="bg-slate-900 px-1.5 py-0.5 rounded text-cyan-300">10,542</code>).
+            </p>
+
+            <div class="flex flex-wrap gap-2 mb-3">
+                <button onclick="loadSample(48, 4.1)" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-medium rounded-lg border border-slate-600 transition">
+                    🧪 Mẫu ~4.1 &mu;F (48 bình)
+                </button>
+                <button onclick="loadSample(48, 10.5)" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-medium rounded-lg border border-slate-600 transition">
+                    🧪 Mẫu ~10.5 &mu;F (48 bình)
+                </button>
+                <button onclick="clearInput()" class="px-3 py-1.5 bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 text-xs font-medium rounded-lg border border-rose-800/60 transition">
+                    🗑️ Xóa
+                </button>
+            </div>
+
+            <textarea id="capacitor-input" rows="8" placeholder="Dán danh sách giá trị điện dung vào đây..."
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm text-slate-200 font-mono focus:outline-none focus:border-cyan-500 mb-4"
+                oninput="handleInputData()"></textarea>
+
+            <button id="calc-btn" onclick="calculate()" disabled
+                class="w-full py-3 px-6 rounded-xl font-bold text-sm bg-slate-700 text-slate-400 cursor-not-allowed transition shadow-lg">
+                ⚡ Tự động tính toán & Phân bổ 6 Nhánh
+            </button>
+        </div>
+
+        <!-- Kết quả -->
+        <div id="results-section" class="hidden space-y-6">
+            <!-- Thống kê độ lệch -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <span class="bg-emerald-500 text-slate-950 rounded-full w-6 h-6 inline-flex items-center justify-center text-xs font-bold">3</span>
+                    Kết quả cân bằng tối ưu
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <!-- Vế Trái -->
+                    <div class="bg-slate-900/80 border border-slate-700/80 rounded-xl p-4">
+                        <h3 class="text-sm font-bold text-cyan-400 mb-2">Vế Trái (3 Nhánh: L-A, L-B, L-C)</h3>
+                        <div class="text-xs text-slate-300 space-y-1">
+                            <div>Độ lệch (Max - Min): <span id="left-diff" class="font-bold text-emerald-400">0.000 &mu;F</span></div>
+                            <div>Sai số lệch chuẩn (&sigma;): <span id="left-std" class="font-bold text-white">0.000</span></div>
+                        </div>
+                    </div>
+                    <!-- Vế Phải -->
+                    <div class="bg-slate-900/80 border border-slate-700/80 rounded-xl p-4">
+                        <h3 class="text-sm font-bold text-cyan-400 mb-2">Vế Phải (3 Nhánh: R-A, R-B, R-C)</h3>
+                        <div class="text-xs text-slate-300 space-y-1">
+                            <div>Độ lệch (Max - Min): <span id="right-diff" class="font-bold text-emerald-400">0.000 &mu;F</span></div>
+                            <div>Sai số lệch chuẩn (&sigma;): <span id="right-std" class="font-bold text-white">0.000</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bảng chi tiết 6 nhánh -->
+                <div class="overflow-x-auto mb-6">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-700 text-slate-400">
+                                <th class="py-3 px-3">Pha / Nhánh</th>
+                                <th class="py-3 px-3">Vế Trái (&mu;F)</th>
+                                <th class="py-3 px-3">Vế Phải (&mu;F)</th>
+                                <th class="py-3 px-3">Tổng Pha (&mu;F)</th>
+                                <th class="py-3 px-3">SL Bình (Trái + Phải)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="branch-table-body" class="divide-y divide-slate-800 text-slate-200">
+                            <!-- JS render -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Danh sách bình chi tiết từng nhánh -->
+                <h3 class="text-sm font-semibold text-slate-300 mb-3">Chi tiết bố trí bình tụ vào từng nhánh:</h3>
+                <div id="branch-details-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <!-- JS render -->
+                </div>
+
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="copyTableAsText()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-xs rounded-xl transition shadow">
+                        📋 Copy bảng kết quả (dán Excel)
+                    </button>
+                    <button onclick="exportCSV()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium text-xs rounded-xl transition border border-slate-600">
+                        📥 Tải file CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let parsedCaps = [];
+
+        function setPreset(nl, nr) {
+            document.getElementById('nl-input').value = nl;
+            document.getElementById('nr-input').value = nr;
+            updateRequirement();
+        }
+
+        function updateRequirement() {
+            const nl = parseInt(document.getElementById('nl-input').value) || 0;
+            const nr = parseInt(document.getElementById('nr-input').value) || 0;
+            const req = 3 * nl + 3 * nr;
+            document.getElementById('nl-total-desc').innerText = `3 nhánh Trái = ${3 * nl} bình`;
+            document.getElementById('nr-total-desc').innerText = `3 nhánh Phải = ${3 * nr} bình`;
+            document.getElementById('required-count').innerText = `${req} bình`;
+            parseAndValidate(false);
+        }
+
+        function loadSample(total, baseVal) {
+            let lines = [];
+            for (let i = 1; i <= total; i++) {
+                let val = (baseVal + (Math.sin(i * 99) * 0.15) + (Math.random() * 0.04 - 0.02)).toFixed(3);
+                lines.push(`Tụ ${i < 10 ? '0' + i : i}: ${val}`);
+            }
+            document.getElementById('capacitor-input').value = lines.join('\n');
+            parseAndValidate(true);
+        }
+
+        function clearInput() {
+            document.getElementById('capacitor-input').value = '';
+            document.getElementById('results-section').classList.add('hidden');
+            parseAndValidate(false);
+        }
+
+        function parseAndValidate(autoRun = false) {
+            const text = document.getElementById('capacitor-input').value;
+            const nl = parseInt(document.getElementById('nl-input').value) || 0;
+            const nr = parseInt(document.getElementById('nr-input').value) || 0;
+            const required = 3 * nl + 3 * nr;
+
+            const lines = text.split('\n');
+            parsedCaps = [];
+            let idCounter = 1;
+
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                // Thay thế dấu phẩy thập phân thành chấm
+                let cleanLine = line.replace(',', '.');
+                // Trích xuất số thực trong dòng
+                let matches = cleanLine.match(/[-+]?[0-9]*\.?[0-9]+/g);
+                if (matches) {
+                    // Lấy số cuối cùng trong dòng làm giá trị điện dung (tránh nhầm số thứ tự tụ ở đầu dòng)
+                    let val = parseFloat(matches[matches.length - 1]);
+                    if (!isNaN(val) && val > 0) {
+                        parsedCaps.push({ id: idCounter++, val: val });
+                    }
+                }
+            }
+
+            document.getElementById('current-count').innerText = `${parsedCaps.length} bình`;
+            const calcBtn = document.getElementById('calc-btn');
+
+            if (parsedCaps.length === required && required > 0) {
+                calcBtn.disabled = false;
+                calcBtn.className = "w-full py-3 px-6 rounded-xl font-bold text-sm bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition shadow-lg cursor-pointer";
+                if (autoRun) calculate();
+            } else {
+                calcBtn.disabled = true;
+                calcBtn.className = "w-full py-3 px-6 rounded-xl font-bold text-sm bg-slate-700 text-slate-400 cursor-not-allowed transition shadow-lg";
+            }
+        }
+
+        // Lắng nghe sự kiện input & paste trên di động
+        document.getElementById('capacitor-input').addEventListener('input', () => parseAndValidate(false));
+        document.getElementById('capacitor-input').addEventListener('paste', () => setTimeout(() => parseAndValidate(false), 50));
+
+        function handleInputData() {
+            parseAndValidate(false);
+        }
+
+        // Thuật toán tối ưu 2 giai đoạn: Ưu tiên triệt tiêu độ lệch nội bộ vế, sau đó ghép pha
+        function calculate() {
+            const nl = parseInt(document.getElementById('nl-input').value);
+            const nr = parseInt(document.getElementById('nr-input').value);
+
+            let totalLeftNeeded = 3 * nl;
+            let totalRightNeeded = 3 * nr;
+
+            // Sắp xếp tụ giảm dần (LPT)
+            let caps = [...parsedCaps].sort((a, b) => b.val - a.val);
+
+            // Bước 1: Chia toàn bộ tụ thành 2 nhóm (Vế Trái & Vế Phải) sao cho tổng điện dung xấp xỉ nhau
+            let bestLeftGroup = [];
+            let bestRightGroup = [];
+            let minGroupDiff = Infinity;
+
+            // Thử các cách kết hợp gom nhóm
+            for (let trial = 0; trial < 200; trial++) {
+                let shuffled = [...caps];
+                if (trial > 0) {
+                    // Xáo trộn nhẹ để tìm kiếm đa điểm
+                    for (let i = shuffled.length - 1; i > 0; i--) {
+                        let j = Math.floor(Math.random() * (i + 1));
+                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                    }
+                }
+                
+                let leftGroup = [];
+                let rightGroup = [];
+                let sumL = 0, sumR = 0;
+
+                // Greedy phân phối
+                for (let c of shuffled) {
+                    if (leftGroup.length < totalLeftNeeded && (rightGroup.length >= totalRightNeeded || sumL <= sumR)) {
+                        leftGroup.push(c);
+                        sumL += c.val;
+                    } else if (rightGroup.length < totalRightNeeded) {
+                        rightGroup.push(c);
+                        sumR += c.val;
+                    }
+                }
+
+                let diff = Math.abs(sumL - sumR);
+                if (diff < minGroupDiff) {
+                    minGroupDiff = diff;
+                    bestLeftGroup = [...leftGroup];
+                    bestRightGroup = [...rightGroup];
+                }
+            }
+
+            // Bước 2: Tối ưu nội bộ 3 nhánh Vế Trái
+            let leftBranches = optimizeThreeBranches(bestLeftGroup, nl);
+            // Bước 3: Tối ưu nội bộ 3 nhánh Vế Phải
+            let rightBranches = optimizeThreeBranches(bestRightGroup, nr);
+
+            // Bước 4: Ghép cặp 3 nhánh Trái và 3 nhánh Phải vào 3 pha A, B, C sao cho tổng điện dung mỗi pha cân bằng nhất
+            let phases = assignPhases(leftBranches, rightBranches);
+
+            renderResults(phases);
+        }
+
+        function optimizeThreeBranches(groupCaps, itemsPerBranch) {
+            // Gom nhóm groupCaps thành 3 nhánh sao cho tổng điện dung mỗi nhánh gần bằng nhau nhất
+            let sorted = [...groupCaps].sort((a, b) => b.val - a.val);
+            let bestBranches = [[], [], []];
+            let minDev = Infinity;
+
+            for (let trial = 0; trial < 500; trial++) {
+                let branches = [[], [], []];
+                let sums = [0, 0, 0];
+
+                let pool = [...sorted];
+                if (trial > 0) {
+                    // Xáo trộn bớt các phần tử có giá trị gần nhau
+                    for (let i = pool.length - 1; i > 0; i--) {
+                        if (Math.random() < 0.3) {
+                            let j = Math.floor(Math.random() * pool.length);
+                            [pool[i], pool[j]] = [pool[j], pool[i]];
+                        }
+                    }
+                }
+
+                // LPT assignment
+                for (let item of pool) {
+                    let minIdx = 0;
+                    let minSum = Infinity;
+                    for (let i = 0; i < 3; i++) {
+                        if (branches[i].length < itemsPerBranch && sums[i] < minSum) {
+                            minSum = sums[i];
+                            minIdx = i;
+                        }
+                    }
+                    branches[minIdx].push(item);
+                    sums[minIdx] += item.val;
+                }
+
+                // Local Search Swap sâu hơn để ép độ lệch nhỏ nhất
+                let improved = true;
+                let iter = 0;
+                while (improved && iter < 50) {
+                    improved = false;
+                    iter++;
+                    for (let i = 0; i < 3; i++) {
+                        for (let j = i + 1; j < 3; j++) {
+                            for (let m = 0; m < branches[i].length; m++) {
+                                for (let n = 0; n < branches[j].length; n++) {
+                                    let itemI = branches[i][m];
+                                    let itemJ = branches[j][n];
+
+                                    let newSumI = sums[i] - itemI.val + itemJ.val;
+                                    let newSumJ = sums[j] - itemJ.val + itemI.val;
+
+                                    let maxOld = Math.max(...sums);
+                                    let minOld = Math.min(...sums);
+                                    let maxNew = Math.max(newSumI, newSumJ, sums[3 - i - j]);
+                                    let minNew = Math.min(newSumI, newSumJ, sums[3 - i - j]);
+
+                                    if ((maxNew - minNew) < (maxOld - minOld)) {
+                                        branches[i][m] = itemJ;
+                                        branches[j][n] = itemI;
+                                        sums[i] = newSumI;
+                                        sums[j] = newSumJ;
+                                        improved = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                let maxS = Math.max(...sums);
+                let minS = Math.min(...sums);
+                let dev = maxS - minS;
+                if (dev < minDev) {
+                    minDev = dev;
+                    bestBranches = branches.map(b => [...b]);
+                }
+            }
+
+            return bestBranches;
+        }
+
+        function assignPhases(leftBranches, rightBranches) {
+            // Tính tổng điện dung của từng nhánh trái và phải
+            let leftSums = leftBranches.map(b => b.reduce((s, x) => s + x.val, 0));
+            let rightSums = rightBranches.map(b => b.reduce((s, x) => s + x.val, 0));
+
+            // Sắp xếp thứ tự các nhánh trái (từ lớn đến nhỏ) và phải (từ nhỏ đến lớn) để ghép bù trừ tối ưu cho 3 pha A, B, C
+            let lIndices = [0, 1, 2].sort((i, j) => leftSums[j] - leftSums[i]);
+            let rIndices = [0, 1, 2].sort((i, j) => rightSums[i] - rightSums[j]);
+
+            let phaseNames = ['A', 'B', 'C'];
+            let result = [];
+
+            for (let i = 0; i < 3; i++) {
+                let li = lIndices[i];
+                let ri = rIndices[i];
+                result.push({
+                    phase: phaseNames[i],
+                    leftBranch: leftBranches[li],
+                    rightBranch: rightBranches[ri],
+                    leftSum: leftSums[li],
+                    rightSum: rightSums[ri],
+                    totalSum: leftSums[li] + rightSums[ri]
+                });
+            }
+
+            return result;
+        }
+
+        let lastResultData = null;
+
+        function renderResults(phases) {
+            lastResultData = phases;
+            document.getElementById('results-section').classList.remove('hidden');
+
+            // Tính thống kê Vế Trái
+            let leftTotals = phases.map(p => p.leftSum);
+            let maxL = Math.max(...leftTotals);
+            let minL = Math.min(...leftTotals);
+            let diffL = maxL - minL;
+            let meanL = leftTotals.reduce((a,b)=>a+b,0)/3;
+            let stdL = Math.sqrt(leftTotals.reduce((a,b)=>a+Math.pow(b-meanL,2),0)/3);
+
+            document.getElementById('left-diff').innerText = `${diffL.toFixed(3)} µF`;
+            document.getElementById('left-std').innerText = stdL.toFixed(4);
+
+            // Tính thống kê Vế Phải
+            let rightTotals = phases.map(p => p.rightSum);
+            let maxR = Math.max(...rightTotals);
+            let minR = Math.min(...rightTotals);
+            let diffR = maxR - minR;
+            let meanR = rightTotals.reduce((a,b)=>a+b,0)/3;
+            let stdR = Math.sqrt(rightTotals.reduce((a,b)=>a+Math.pow(b-meanR,2),0)/3);
+
+            document.getElementById('right-diff').innerText = `${diffR.toFixed(3)} µF`;
+            document.getElementById('right-std').innerText = stdR.toFixed(4);
+
+            // Bảng tổng hợp
+            let tbody = document.getElementById('branch-table-body');
+            tbody.innerHTML = '';
+            phases.forEach(p => {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-3 px-3 font-bold text-cyan-400">Pha ${p.phase}</td>
+                    <td class="py-3 px-3 font-mono">${p.leftSum.toFixed(3)} µF</td>
+                    <td class="py-3 px-3 font-mono">${p.rightSum.toFixed(3)} µF</td>
+                    <td class="py-3 px-3 font-mono font-bold text-emerald-400">${p.totalSum.toFixed(3)} µF</td>
+                    <td class="py-3 px-3">${p.leftBranch.length} (Trái) + ${p.rightBranch.length} (Phải)</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Chi tiết từng nhánh
+            let container = document.getElementById('branch-details-container');
+            container.innerHTML = '';
+            phases.forEach(p => {
+                let card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-700/80 rounded-xl p-4";
+                card.innerHTML = `
+                    <h4 class="font-bold text-white text-sm mb-2 border-b border-slate-800 pb-1">Pha ${p.phase} (Tổng: ${p.totalSum.toFixed(3)} µF)</h4>
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <span class="text-cyan-400 font-semibold">Nhánh Trái (${p.leftSum.toFixed(3)} µF):</span>
+                            <div class="mt-1 font-mono text-slate-300 bg-slate-950/50 p-2 rounded border border-slate-800/80 max-h-28 overflow-y-auto">
+                                ${p.leftBranch.map(c => `Tụ #${c.id}: <b>${c.val.toFixed(3)}</b>`).join('<br>')}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-amber-400 font-semibold">Nhánh Phải (${p.rightSum.toFixed(3)} µF):</span>
+                            <div class="mt-1 font-mono text-slate-300 bg-slate-950/50 p-2 rounded border border-slate-800/80 max-h-28 overflow-y-auto">
+                                ${p.rightBranch.map(c => `Tụ #${c.id}: <b>${c.val.toFixed(3)}</b>`).join('<br>')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function copyTableAsText() {
+            if (!lastResultData) return;
+            let text = "PHA\tNHÁNH TRÁI (µF)\tNHÁNH PHẢI (µF)\tTỔNG PHA (µF)\n";
+            lastResultData.forEach(p => {
+                text += `Pha ${p.phase}\t${p.leftSum.toFixed(3)}\t${p.rightSum.toFixed(3)}\t${p.totalSum.toFixed(3)}\n`;
+            });
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Đã copy bảng kết quả vào clipboard! Bạn có thể dán thẳng vào Excel.");
+            });
+        }
+
+        function exportCSV() {
+            if (!lastResultData) return;
+            let csv = "Pha,Nhanh,Ma Tu,Dien Dung (uF),Tong Nhanh (uF),Tong Pha (uF)\n";
+            lastResultData.forEach(p => {
+                p.leftBranch.forEach((c, idx) => {
+                    csv += `Pha ${p.phase},Trai,Tu #${c.id},${c.val},${p.leftSum.toFixed(3)},${p.totalSum.toFixed(3)}\n`;
+                });
+                p.rightBranch.forEach((c, idx) => {
+                    csv += `Pha ${p.phase},Phai,Tu #${c.id},${c.val},${p.rightSum.toFixed(3)},${p.totalSum.toFixed(3)}\n`;
+                });
+            });
+            let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = 'can_bang_dien_dung_6_nhanh.csv';
+            a.click();
+        }
+    </script>
+</body>
+</html>
